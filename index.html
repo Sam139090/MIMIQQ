@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIMIQ - Pantomime Party Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-align: center;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #999;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-secondary.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-icon {
+      background: white;
+      border: 2px solid #ddd;
+      color: #333;
+      padding: 12px;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon:hover {
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    input[type="range"],
+    input[type="color"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="color"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      border: none;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(to right, #ddd 0%, #ddd 100%);
+      border-radius: 3px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .input-group input {
+      flex: 1;
+      margin: 0;
+    }
+
+    .input-group .value {
+      min-width: 40px;
+      text-align: center;
+      font-weight: 700;
+      color: #667eea;
+      font-size: 18px;
+    }
+
+    .color-input {
+      height: 50px;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .team-inputs {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .team-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .team-input-row input {
+      flex: 1;
+    }
+
+    .team-number {
+      min-width: 40px;
+      height: 44px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .category-card {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .category-card:hover:not(.disabled) {
+      border-color: #667eea;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .category-card.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .category-card.selected {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: transparent;
+      color: white;
+    }
+
+    .category-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .category-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .category-points {
+      font-size: 16px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .difficulty-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .difficulty-btn {
+      padding: 12px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .difficulty-btn:hover:not(.disabled) {
+      border-color: #667eea;
+    }
+
+    .difficulty-btn.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .difficulty-btn.selected {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: transparent;
+      color: white;
+    }
+
+    .word-display {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 24px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      font-weight: 900;
+    }
+
+    .timer-display {
+      font-size: 80px;
+      font-weight: 900;
+      text-align: center;
+      color: white;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .score-table {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+    }
+
+    .score-row:last-child {
+      border-bottom: none;
+    }
+
+    .score-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .score-value {
+      font-size: 20px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .medal {
+      font-size: 32px;
+      margin-right: 12px;
+    }
+
+    .rank-position {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .center-content {
+      text-align: center;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .round-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .round-stat {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .round-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .round-value {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .result-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .result-text {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .result-points {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .positive {
+      color: #10b981;
+    }
+
+    .negative {
+      color: #ef4444;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-buttons.full {
+      grid-template-columns: 1fr;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #764ba2;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Language Selection Screen -->
+    <div id="screen-language" class="screen active">
+      <div class="container center-content">
+        <div class="title" id="langScreenTitle">MIMIQ</div>
+        <div class="subtitle" id="langScreenSubtitle">Pantomime Party Game</div>
+        <div class="button-group" style="flex-direction: column;">
+          <button class="btn btn-primary" onclick="game.selectLanguage('en')">🇺🇸 English</button>
+          <button class="btn btn-primary" onclick="game.selectLanguage('fa')">🇮🇷 فارسی</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Setup Screen -->
+    <div id="screen-setup" class="screen">
+      <div class="container">
+        <div class="title" id="setupTitle">Game Setup</div>
+        <div class="subtitle" id="setupSubtitle">Configure your game</div>
+
+        <!-- Game Mode -->
+        <div class="form-group">
+          <label class="label" id="gameModeLabel">Game Mode</label>
+          <div class="button-group">
+            <button class="btn btn-secondary active" id="teamPlayBtn" onclick="game.setGameMode('team')">Team Play</button>
+            <button class="btn btn-secondary" id="tournamentBtn" onclick="game.setGameMode('tournament')">Tournament</button>
+          </div>
+        </div>
+
+        <!-- Number of Teams -->
+        <div class="form-group">
+          <label class="label" id="numTeamsLabel">Number of Teams</label>
+          <div class="input-group">
+            <input type="range" id="teamCount" min="2" max="6" value="2" oninput="game.updateTeamCount(this.value)">
+            <span class="value" id="teamCountValue">2</span>
+          </div>
+        </div>
+
+        <!-- Team Names -->
+        <div class="form-group">
+          <label class="label" id="teamNamesLabel">Team Names</label>
+          <div class="team-inputs" id="teamInputs"></div>
+        </div>
+
+        <!-- Time Per Round -->
+        <div class="form-group">
+          <label class="label" id="timePerRoundLabel">Time Per Round (seconds)</label>
+          <div class="input-group">
+            <input type="range" id="timePerRound" min="30" max="180" step="15" value="60" oninput="game.updateTimePerRound(this.value)">
+            <span class="value" id="timeValue">60s</span>
+          </div>
+        </div>
+
+        <!-- Number of Rounds -->
+        <div class="form-group">
+          <label class="label" id="numRoundsLabel">Number of Rounds</label>
+          <div class="input-group">
+            <input type="range" id="numRounds" min="3" max="15" value="5" oninput="game.updateNumRounds(this.value)">
+            <span class="value" id="roundsValue">5</span>
+          </div>
+        </div>
+
+        <!-- Colors -->
+        <div class="form-group">
+          <label class="label" id="primaryColorLabel">Primary Color</label>
+          <input type="color" id="primaryColor" value="#667eea" onchange="game.updateColors()">
+        </div>
+
+        <div class="form-group">
+          <label class="label" id="secondaryColorLabel">Secondary Color</label>
+          <input type="color" id="secondaryColor" value="#764ba2" onchange="game.updateColors()">
+        </div>
+
+        <!-- Start Button -->
+        <button class="btn btn-primary" id="startGameBtn" style="width: 100%; padding: 16px;" onclick="game.startGame()">🎮 Start Game</button>
+      </div>
+    </div>
+
+    <!-- Game Board Screen -->
+    <div id="screen-board" class="screen">
+      <div class="container">
+        <div class="round-info">
+          <div class="round-stat">
+            <div class="round-label" id="currentTeamLabel">Current Team</div>
+            <div class="round-value" id="currentTeamName">Team 1</div>
+          </div>
+          <div class="round-stat">
+            <div class="round-label" id="roundLabel">Round</div>
+            <div class="round-value" id="currentRound">1/5</div>
+          </div>
+        </div>
+
+        <div class="score-table" id="scoreTable"></div>
+
+        <label class="label" id="selectCategoryLabel" style="margin-top: 20px;">Select a Category</label>
+        <div class="category-grid" id="categoryGrid"></div>
+
+        <button class="btn btn-secondary" id="backSetupBtn" style="width: 100%;" onclick="game.showSetup()">← Back to Setup</button>
+      </div>
+    </div>
+
+    <!-- Category Selection Screen -->
+    <div id="screen-category" class="screen">
+      <div class="container center-content">
+        <div style="font-size: 48px; margin-bottom: 16px;" id="categoryIcon"></div>
+        <div class="title" id="categoryName"></div>
+        <div class="subtitle" id="selectDifficultyLabel" style="margin-bottom: 24px;">Select Difficulty</div>
+
+        <div class="difficulty-selector" id="difficultySelector"></div>
+
+        <button class="btn btn-secondary" id="backCategoryBtn" style="width: 100%; margin-top: 16px;" onclick="game.showBoard()">← Back</button>
+      </div>
+    </div>
+
+    <!-- Word Reveal Screen -->
+    <div id="screen-word" class="screen">
+      <div class="container center-content">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <div id="wordTeamName" style="font-size: 18px; color: #999; margin-bottom: 8px;"></div>
+          <div id="wordCategory" style="font-size: 28px; font-weight: 800; color: #333;"></div>
+          <div id="wordDifficulty" style="font-size: 14px; color: #999; margin-top: 8px;"></div>
+        </div>
+
+        <div class="word-display" id="wordDisplay">?</div>
+
+        <div id="wordActions" style="display: none; width: 100%;">
+          <button class="btn btn-primary" id="startTimerBtn" style="width: 100%; padding: 16px; margin-bottom: 12px;" onclick="game.startTimer()">▶️ Start Timer</button>
+          <button class="btn btn-secondary" id="changeWordBtn" style="width: 100%; padding: 12px; margin-bottom: 12px;" onclick="game.changeWord()">🔁 Change Word (-1pt)</button>
+        </div>
+
+        <button class="btn btn-secondary" id="showWordBtn" style="width: 100%;" onclick="game.revealWord()">👁️ Show Word</button>
+      </div>
+    </div>
+
+    <!-- Timer Screen -->
+    <div id="screen-timer" class="screen" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+      <div style="width: 100%; text-align: center; color: white;">
+        <div style="font-size: 24px; font-weight: 700; margin-bottom: 16px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);" id="timerTeamName">Team 1</div>
+        <div style="font-size: 16px; font-weight: 600; margin-bottom: 40px; opacity: 0.9;" id="timerCategory">Category</div>
+
+        <div class="timer-display" id="timerDisplay">60</div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 300px; margin: 0 auto;">
+          <button class="btn" style="background: #10b981; color: white; padding: 20px;" onclick="game.answerCorrect()">✅ Correct</button>
+          <button class="btn" style="background: #ef4444; color: white; padding: 20px;" onclick="game.answerWrong()">❌ Wrong</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Round End Screen -->
+    <div id="screen-round-end" class="screen">
+      <div class="container center-content">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-text" id="resultText"></div>
+        <div class="result-points" id="resultPoints"></div>
+
+        <label class="label" id="scoresAfterLabel">Scores After Round</label>
+        <div class="score-table" id="roundEndScores"></div>
+
+        <button class="btn btn-primary" id="nextTurnBtn" style="width: 100%; padding: 16px; margin-top: 20px;" onclick="game.nextTurn()">Next Turn →</button>
+      </div>
+    </div>
+
+    <!-- Final Results Screen -->
+    <div id="screen-results" class="screen">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 56px; margin-bottom: 12px;">🏆</div>
+          <div class="title" id="gameOverLabel">Game Over!</div>
+        </div>
+
+        <div class="score-table" id="finalResults"></div>
+
+        <div class="action-buttons" style="margin-top: 24px;">
+          <button class="btn btn-secondary" id="restartBtn" onclick="game.restartGame()">🔄 Restart</button>
+          <button class="btn btn-primary" id="newGameBtn" onclick="game.newGame()">🆕 New Game</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const UI_STRINGS = {
+      en: {
+        gameTitle: 'MIMIQ',
+        subtitle: 'Pantomime Party Game',
+        setupTitle: 'Game Setup',
+        setupSubtitle: 'Configure your game',
+        gameMode: 'Game Mode',
+        teamPlay: 'Team Play',
+        tournament: 'Tournament',
+        numTeams: 'Number of Teams',
+        teamNames: 'Team Names',
+        timePerRound: 'Time Per Round (seconds)',
+        numRounds: 'Number of Rounds',
+        primaryColor: 'Primary Color',
+        secondaryColor: 'Secondary Color',
+        startGame: '🎮 Start Game',
+        currentTeam: 'Current Team',
+        round: 'Round',
+        selectCategory: 'Select a Category',
+        backSetup: '← Back to Setup',
+        selectDifficulty: 'Select Difficulty',
+        easy: 'Easy',
+        medium: 'Medium',
+        hard: 'Hard',
+        special: 'Proverb',
+        back: '← Back',
+        showWord: '👁️ Show Word',
+        startTimer: '▶️ Start Timer',
+        changeWord: '🔁 Change Word (-1pt)',
+        scoresAfter: 'Scores After Round',
+        nextTurn: 'Next Turn →',
+        gameOver: 'Game Over!',
+        restart: '🔄 Restart',
+        newGame: '🆕 New Game',
+        correct: 'Correct!',
+        wrong: 'Wrong!',
+        points: 'points'
+      },
+      fa: {
+        gameTitle: 'میمیک',
+        subtitle: 'بازی پانتومایم گروهی',
+        setupTitle: 'تنظیمات بازی',
+        setupSubtitle: 'بازی خود را پیکربندی کنید',
+        gameMode: 'حالت بازی',
+        teamPlay: 'بازی تیمی',
+        tournament: 'مسابقه',
+        numTeams: 'تعداد تیم‌ها',
+        teamNames: 'نام تیم‌ها',
+        timePerRound: 'زمان هر دور (ثانیه)',
+        numRounds: 'تعداد دورها',
+        primaryColor: 'رنگ اصلی',
+        secondaryColor: 'رنگ ثانویه',
+        startGame: '🎮 شروع بازی',
+        currentTeam: 'تیم فعلی',
+        round: 'دور',
+        selectCategory: 'یک دسته انتخاب کنید',
+        backSetup: '← بازگشت به تنظیمات',
+        selectDifficulty: 'سطح سختی را انتخاب کنید',
+        easy: 'آسان',
+        medium: 'متوسط',
+        hard: 'سخت',
+        special: 'ضرب‌المثل',
+        back: '← بازگشت',
+        showWord: '👁️ نمایش کلمه',
+        startTimer: '▶️ شروع تایمر',
+        changeWord: '🔁 تغییر کلمه (-1pt)',
+        scoresAfter: 'امتیازات بعد از دور',
+        nextTurn: 'نوبت بعدی →',
+        gameOver: 'بازی تمام!',
+        restart: '🔄 شروع دوباره',
+        newGame: '🆕 بازی جدید',
+        correct: 'صحیح!',
+        wrong: 'غلط!',
+        points: 'امتیاز'
+      }
+    };
+
+    const WORD_DATABASE = {
+      en: {
+        'City or Country': {
+          icon: '🌍',
+          easy: ['Paris', 'Tokyo', 'New York', 'London', 'Sydney', 'Cairo', 'Amsterdam', 'Rome'],
+          medium: ['Venice', 'Bangkok', 'Barcelona', 'Moscow', 'Istanbul', 'Dubai', 'Singapore', 'Berlin'],
+          hard: ['Marrakech', 'Copenhagen', 'Montreal', 'Wellington', 'Reykjavik', 'Prague']
+        },
+        'Animals': {
+          icon: '🦁',
+          easy: ['Dog', 'Cat', 'Bird', 'Fish', 'Horse', 'Cow', 'Pig', 'Elephant'],
+          medium: ['Gorilla', 'Kangaroo', 'Penguin', 'Dolphin', 'Camel', 'Peacock', 'Lion', 'Tiger'],
+          hard: ['Cheetah', 'Sloth', 'Octopus', 'Hedgehog', 'Platypus', 'Flamingo']
+        },
+        'Sports': {
+          icon: '⚽',
+          easy: ['Football', 'Basketball', 'Tennis', 'Swimming', 'Running', 'Cycling', 'Golf', 'Boxing'],
+          medium: ['Yoga', 'Surfing', 'Skiing', 'Skateboarding', 'Rock Climbing', 'Archery', 'Fencing', 'Gymnastics'],
+          hard: ['Ice Skating', 'Ballet', 'Parkour', 'Weightlifting', 'Martial Arts', 'Climbing']
+        },
+        'Places': {
+          icon: '🏰',
+          easy: ['House', 'School', 'Hospital', 'Park', 'Beach', 'Mountain', 'Forest', 'River'],
+          medium: ['Temple', 'Museum', 'Library', 'Stadium', 'Theater', 'Airport', 'Train Station', 'Market'],
+          hard: ['Pyramid', 'Volcano', 'Canyon', 'Waterfall', 'Lighthouse', 'Clock Tower']
+        },
+        'Technology': {
+          icon: '💻',
+          easy: ['Phone', 'Computer', 'Television', 'Camera', 'Clock', 'Robot', 'Drone', 'Headphones'],
+          medium: ['Satellite', 'Solar Panel', 'Telescope', 'Microscope', 'Printer', 'Scanner', 'Keyboard', 'Mouse'],
+          hard: ['Circuit Board', 'Quantum Computer', 'Artificial Intelligence', 'Virtual Reality', 'Hologram', 'Blockchain']
+        },
+        'Actions': {
+          icon: '🏃',
+          easy: ['Walking', 'Running', 'Jumping', 'Sitting', 'Sleeping', 'Eating', 'Drinking', 'Talking'],
+          medium: ['Dancing', 'Singing', 'Crying', 'Laughing', 'Hugging', 'Painting', 'Building', 'Climbing'],
+          hard: ['Meditation', 'Stretching', 'Sneezing', 'Yawning', 'Thinking', 'Celebrating']
+        },
+        'Objects': {
+          icon: '📱',
+          easy: ['Chair', 'Table', 'Bed', 'Door', 'Window', 'Book', 'Shoe', 'Hat'],
+          medium: ['Guitar', 'Piano', 'Violin', 'Bicycle', 'Skateboard', 'Boat', 'Airplane', 'Train'],
+          hard: ['Telescope', 'Microscope', 'Compass', 'Sextant', 'Hourglass', 'Abacus']
+        },
+        'Foods & Snacks': {
+          icon: '🍕',
+          easy: ['Pizza', 'Burger', 'Pasta', 'Salad', 'Soup', 'Bread', 'Apple', 'Banana'],
+          medium: ['Sushi', 'Tacos', 'Spaghetti', 'Ramen', 'Curry', 'Kebab', 'Waffle', 'Cookie'],
+          hard: ['Croissant', 'Tiramisu', 'Caviar', 'Truffle', 'Escargot', 'Fondue']
+        },
+        'Movies & TV Shows': {
+          icon: '🎬',
+          easy: ['Superman', 'Batman', 'Spider-Man', 'Wonder Woman', 'Iron Man', 'Captain America', 'Frozen', 'Titanic'],
+          medium: ['Avatar', 'Matrix', 'Inception', 'Star Wars', 'Harry Potter', 'Lord of the Rings', 'Jurassic Park', 'Jaws'],
+          hard: ['The Godfather', 'Pulp Fiction', 'Shawshank', 'Parasite', 'Oppenheimer', 'Dune']
+        },
+        'Emotions & Moods': {
+          icon: '😊',
+          easy: ['Happy', 'Sad', 'Angry', 'Scared', 'Sleepy', 'Hungry', 'Bored', 'Excited'],
+          medium: ['Nervous', 'Confused', 'Surprised', 'Jealous', 'Proud', 'Shy', 'Relaxed', 'Confident'],
+          hard: ['Nostalgic', 'Melancholic', 'Anxious', 'Frustrated', 'Overwhelmed', 'Inspired']
+        },
+        'Famous Characters': {
+          icon: '👑',
+          easy: ['Sherlock Holmes', 'Dracula', 'Frankenstein', 'Mummy', 'Ghost', 'Vampire', 'Zombie', 'Skeleton'],
+          medium: ['Cinderella', 'Pinocchio', 'Alice', 'Dorothy', 'Aladdin', 'Ariel', 'Simba', 'Elsa'],
+          hard: ['Medusa', 'Hercules', 'Macbeth', 'Juliet', 'Romeo', 'Hamlet']
+        },
+        'Holidays & Occasions': {
+          icon: '🎄',
+          easy: ['Christmas', 'Halloween', 'Birthday', 'Valentine', 'Easter', 'New Year', 'Independence Day', 'Thanksgiving'],
+          medium: ['Wedding', 'Graduation', 'Carnival', 'Diwali', 'Hanukkah', 'Eid', 'St Patrick', 'Cinco de Mayo'],
+          hard: ['Rosh Hashanah', 'Lunar New Year', 'Summer Solstice', 'Winter Solstice', 'Equinox', 'Jubilee']
+        },
+        'Proverbs': {
+          icon: '📜',
+          special: ['All that glitters is not gold', 'When life gives you lemons, make lemonade', 'A picture is worth a thousand words', 'Better late than never', 'Out of sight out of mind', 'You cannot judge a book by its cover', 'Actions speak louder than words', 'Time flies', 'Practice makes perfect', 'Two sides to every story', 'Breaking the ice', 'Stealing the spotlight', 'Missing the mark', 'Food for thought', 'Blind leading the blind']
+        }
+      },
+      fa: {
+        'شهر یا کشور': {
+          icon: '🌍',
+          easy: ['پاریس', 'توکیو', 'نیویورک', 'لندن', 'سیدنی', 'قاهره', 'آمستردام', 'روم'],
+          medium: ['ونیز', 'بانکوک', 'بارسلونا', 'مسکو', 'استانبول', 'دبی', 'سنگاپور', 'برلین'],
+          hard: ['مراکش', 'کپنهاگ', 'مونترال', 'ولینگتون', 'ریکیاویک', 'پراگ']
+        },
+        'حیوانات': {
+          icon: '🦁',
+          easy: ['سگ', 'گربه', 'پرنده', 'ماهی', 'اسب', 'گاو', 'خوک', 'فیل'],
+          medium: ['گوریل', 'کانگورو', 'پنگوئن', 'دلفین', 'شتر', 'طاوس', 'شیر', 'ببر'],
+          hard: ['یوز', 'تنبل', 'آکتوپوس', 'خار‌پشت', 'پلاتیپوس', 'فلامینگو']
+        },
+        'ورزش': {
+          icon: '⚽',
+          easy: ['فوتبال', 'بسکتبال', 'تنیس', 'شنا', 'دویدن', 'دوچرخه‌سواری', 'گلف', 'بوکس'],
+          medium: ['یوگا', 'موج‌سواری', 'اسکی', 'اسکیت‌بردی', 'صخره‌نوردی', 'تیراندازی', 'شمشیرزنی', 'ژیمناستیک'],
+          hard: ['یخ‌روی', 'بالت', 'پارکور', 'وزنه‌برداری', 'هنرهای رزمی', 'درقه‌کوهی']
+        },
+        'مکان‌ها': {
+          icon: '🏰',
+          easy: ['خانه', 'مدرسه', 'بیمارستان', 'پارک', 'ساحل', 'کوه', 'جنگل', 'رودخانه'],
+          medium: ['معبد', 'موزه', 'کتابخانه', 'ورزشگاه', 'تئاتر', 'فرودگاه', 'ایستگاه قطار', 'بازار'],
+          hard: ['هرم', 'آتشفشان', 'دره', 'آبشار', 'فانوس دریایی', 'برج ساعت']
+        },
+        'فناوری': {
+          icon: '💻',
+          easy: ['تلفن', 'کامپیوتر', 'تلویزیون', 'دوربین', 'ساعت', 'ربات', 'پهپاد', 'هدفون'],
+          medium: ['ماهواره', 'پنل خورشیدی', 'تلسکوپ', 'میکروسکوپ', 'پرینتر', 'اسکنر', 'کیبورد', 'موس'],
+          hard: ['برد مدار', 'رایانه کوانتومی', 'هوش مصنوعی', 'واقعیت مجازی', 'هولوگرام', 'بلاکچین']
+        },
+        'حرکات': {
+          icon: '🏃',
+          easy: ['راه رفتن', 'دویدن', 'پریدن', 'نشستن', 'خوابیدن', 'خوردن', 'نوشیدن', 'صحبت کردن'],
+          medium: ['رقصیدن', 'خواندن', 'گریستن', 'خندیدن', 'بغل کردن', 'نقاشی کشیدن', 'ساختن', 'صعود کردن'],
+          hard: ['مدیتیشن', 'کشش', 'عطسه', 'خمیازه', 'فکر کردن', 'جشن گرفتن']
+        },
+        'اشیاء': {
+          icon: '📱',
+          easy: ['صندلی', 'میز', 'تخت', 'در', 'پنجره', 'کتاب', 'کفش', 'کلاه'],
+          medium: ['گیتار', 'پیانو', 'ویولن', 'دوچرخه', 'اسکیت‌برد', 'قایق', 'هواپیما', 'قطار'],
+          hard: ['تلسکوپ', 'میکروسکوپ', 'قطب‌نما', 'سکستان', 'ساعت شنی', 'چوب حساب']
+        },
+        'غذا و تنقلات': {
+          icon: '🍕',
+          easy: ['پیتزا', 'همبرگر', 'پاستا', 'سالاد', 'سوپ', 'نان', 'سیب', 'موز'],
+          medium: ['سوشی', 'تاکو', 'اسپاگتی', 'رامن', 'کاری', 'کباب', 'وافل', 'کوکی'],
+          hard: ['کروسان', 'تیرامیسو', 'خاویار', 'خمیر', 'حلزون', 'فوندو']
+        },
+        'فیلم و سریال': {
+          icon: '🎬',
+          easy: ['سوپرمن', 'بتمن', 'مرد عنکبوتی', 'زن معجزه', 'مرد آهنی', 'کاپیتان آمریکا', 'یخ‌زده', 'تایتانیک'],
+          medium: ['آواتار', 'ماتریکس', 'تلقین', 'جنگ ستارگان', 'هری پاتر', 'ارباب حلقه‌ها', 'دایناسور', 'تمساح'],
+          hard: ['پدرخوانده', 'داستان پالپ', 'شاوشنک', 'انگل', 'اپنهایمر', 'ریت']
+        },
+        'احساسات و خلقیات': {
+          icon: '😊',
+          easy: ['خوشحال', 'غمگین', 'عصبانی', 'ترسو', 'خواب‌آلود', 'گرسنه', 'کسل', 'هیجان‌زده'],
+          medium: ['عصبی', 'گیج', 'شگفت‌زده', 'حسود', 'مغرور', 'خجالتی', 'آرام', 'اعتماد‌بخش'],
+          hard: ['نوستالژی', 'تاریک‌خلق', 'نگران', 'ناامید', 'غالب', 'الهام‌بخش']
+        },
+        'شخصیت‌های معروف': {
+          icon: '👑',
+          easy: ['شرلوک هولمز', 'دراکولا', 'فرانکنشتاین', 'مومیایی', 'شبح', 'خون‌آشام', 'زمبی', 'اسکلت'],
+          medium: ['سیندرلا', 'پینوکیو', 'آلیس', 'دوروتی', 'علاء‌الدین', 'آریل', 'سیمبا', 'السا'],
+          hard: ['مدوسا', 'هرکول', 'مکبت', 'جولیت', 'رومئو', 'هملت']
+        },
+        'تعطیلات و مناسبات': {
+          icon: '🎄',
+          easy: ['کریسمس', 'هالووین', 'تولد', 'روز عشق', 'عید پاک', 'سال نو', 'روز استقلال', 'شکرگذاری'],
+          medium: ['عروسی', 'فارغ‌التحصیلی', 'کارنیوال', 'دیوالی', 'حنوکا', 'عید', 'روز سنت پاتریک', 'سنکو دمایو'],
+          hard: ['روش هاشانا', 'سال نو قمری', 'تابستان انقلاب', 'زمستان انقلاب', 'اعتدال', 'جوبیلی']
+        },
+        'ضرب‌المثل': {
+          icon: '📜',
+          special: ['هر چه برّاق است طلا نیست', 'زندگی وقتی لیموناد میدهد شربت بسازید', 'یک تصویر هزار کلمه ارزش دارد', 'دیر بهتر از هرگز است', 'دور از دید دور از دل', 'کتاب را از جلد داوری نکن', 'کردار بلندتر از گفتار است', 'زمان پرواز می‌کند', 'تمرین اصلاح حرفه است', 'هر سکه دو رو دارد', 'یخ شکستن', 'وزن گرفتن', 'هدف را از دست دادن', 'غذا برای فکر', 'نابینای رهبر نابینا']
+        }
+      }
+    };
+
+    const game = {
+      language: 'en',
+      gameMode: 'team',
+      teamCount: 2,
+      teams: [],
+      timePerRound: 60,
+      numRounds: 5,
+      currentRound: 1,
+      currentTeamIndex: 0,
+      selectedCategory: null,
+      selectedDifficulty: null,
+      currentWord: null,
+      wordChanged: false,
+      timerInterval: null,
+      usedWords: new Set(),
+      usedCategoryDifficulty: new Set(),
+      primaryColor: '#667eea',
+      secondaryColor: '#764ba2',
+
+      t(key) {
+        return UI_STRINGS[this.language][key] || UI_STRINGS['en'][key];
+      },
+
+      updateLanguage() {
+        document.getElementById('setupTitle').textContent = this.t('setupTitle');
+        document.getElementById('setupSubtitle').textContent = this.t('setupSubtitle');
+        document.getElementById('gameModeLabel').textContent = this.t('gameMode');
+        document.getElementById('teamPlayBtn').textContent = this.t('teamPlay');
+        document.getElementById('tournamentBtn').textContent = this.t('tournament');
+        document.getElementById('numTeamsLabel').textContent = this.t('numTeams');
+        document.getElementById('teamNamesLabel').textContent = this.t('teamNames');
+        document.getElementById('timePerRoundLabel').textContent = this.t('timePerRound');
+        document.getElementById('numRoundsLabel').textContent = this.t('numRounds');
+        document.getElementById('primaryColorLabel').textContent = this.t('primaryColor');
+        document.getElementById('secondaryColorLabel').textContent = this.t('secondaryColor');
+        document.getElementById('startGameBtn').textContent = this.t('startGame');
+        document.getElementById('currentTeamLabel').textContent = this.t('currentTeam');
+        document.getElementById('roundLabel').textContent = this.t('round');
+        document.getElementById('selectCategoryLabel').textContent = this.t('selectCategory');
+        document.getElementById('backSetupBtn').textContent = this.t('backSetup');
+        document.getElementById('selectDifficultyLabel').textContent = this.t('selectDifficulty');
+        document.getElementById('showWordBtn').textContent = this.t('showWord');
+        document.getElementById('startTimerBtn').textContent = this.t('startTimer');
+        document.getElementById('changeWordBtn').textContent = this.t('changeWord');
+        document.getElementById('scoresAfterLabel').textContent = this.t('scoresAfter');
+        document.getElementById('nextTurnBtn').textContent = this.t('nextTurn');
+        document.getElementById('gameOverLabel').textContent = this.t('gameOver');
+        document.getElementById('restartBtn').textContent = this.t('restart');
+        document.getElementById('newGameBtn').textContent = this.t('newGame');
+        document.getElementById('backCategoryBtn').textContent = this.t('back');
+      },
+
+      applyColors() {
+        const primaryColor = this.primaryColor;
+        const secondaryColor = this.secondaryColor;
+
+        document.body.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`;
+        
+        const style = document.createElement('style');
+        style.textContent = `
+          .btn-primary {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+          }
+          .btn-primary:hover {
+            box-shadow: 0 8px 20px ${primaryColor}40 !important;
+          }
+          .category-card.selected {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+          }
+          .difficulty-btn.selected {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+          }
+          .word-display {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+          }
+          .title {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+          }
+          .round-value {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+          }
+          .score-value {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+          }
+          .info-box {
+            border-left-color: ${primaryColor} !important;
+          }
+          .category-card:hover:not(.disabled) {
+            border-color: ${primaryColor} !important;
+            box-shadow: 0 8px 20px ${primaryColor}30 !important;
+          }
+          .difficulty-btn:hover:not(.disabled) {
+            border-color: ${primaryColor} !important;
+          }
+          input[type="range"]::-webkit-slider-thumb {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+          }
+          input[type="range"]::-moz-range-thumb {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}) !important;
+          }
+          input[type="text"]:focus, input[type="color"]:focus {
+            border-color: ${primaryColor} !important;
+          }
+          ::-webkit-scrollbar-thumb {
+            background: ${primaryColor} !important;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: ${secondaryColor} !important;
+          }
+        `;
+        document.head.appendChild(style);
+      },
+
+      selectLanguage(lang) {
+        this.language = lang;
+        this.updateLanguage();
+        this.showSetup();
+      },
+
+      showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+      },
+
+      showSetup() {
+        this.renderSetupUI();
+        this.showScreen('screen-setup');
+      },
+
+      renderSetupUI() {
+        document.getElementById('teamCountValue').textContent = this.teamCount;
+
+        const teamInputs = document.getElementById('teamInputs');
+        teamInputs.innerHTML = '';
+        for (let i = 0; i < this.teamCount; i++) {
+          const row = document.createElement('div');
+          row.className = 'team-input-row';
+          row.innerHTML = `
+            <div class="team-number">${i + 1}</div>
+            <input type="text" placeholder="Team Name" value="${this.teams[i]?.name || ''}" onchange="game.updateTeamName(${i}, this.value)">
+          `;
+          teamInputs.appendChild(row);
+        }
+      },
+
+      updateTeamCount(value) {
+        this.teamCount = parseInt(value);
+        document.getElementById('teamCountValue').textContent = value;
+        this.renderSetupUI();
+      },
+
+      updateTeamName(index, name) {
+        if (!this.teams[index]) this.teams[index] = { name: '', score: 0 };
+        this.teams[index].name = name;
+      },
+
+      updateTimePerRound(value) {
+        this.timePerRound = parseInt(value);
+        document.getElementById('timeValue').textContent = value + 's';
+      },
+
+      updateNumRounds(value) {
+        this.numRounds = parseInt(value);
+        document.getElementById('roundsValue').textContent = value;
+      },
+
+      updateColors() {
+        this.primaryColor = document.getElementById('primaryColor').value;
+        this.secondaryColor = document.getElementById('secondaryColor').value;
+        this.applyColors();
+      },
+
+      setGameMode(mode) {
+        this.gameMode = mode;
+        const buttons = document.querySelectorAll('[onclick*="setGameMode"]');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+      },
+
+      startGame() {
+        for (let i = 0; i < this.teamCount; i++) {
+          if (!this.teams[i]) this.teams[i] = { name: '', score: 0 };
+          if (!this.teams[i].name) this.teams[i].name = `Team ${i + 1}`;
+          this.teams[i].score = 0;
+        }
+
+        this.currentRound = 1;
+        this.currentTeamIndex = 0;
+        this.usedWords.clear();
+        this.usedCategoryDifficulty.clear();
+        this.showBoard();
+      },
+
+      showBoard() {
+        this.renderBoard();
+        this.showScreen('screen-board');
+      },
+
+      renderBoard() {
+        const team = this.teams[this.currentTeamIndex];
+        document.getElementById('currentTeamName').textContent = team.name;
+        document.getElementById('currentRound').textContent = `${this.currentRound}/${this.numRounds}`;
+
+        const scoreTable = document.getElementById('scoreTable');
+        scoreTable.innerHTML = this.teams.map((t, i) => `
+          <div class="score-row" style="${i === this.currentTeamIndex ? 'background: #f0f0f0; border-radius: 8px;' : ''}">
+            <div class="score-name">${t.name}</div>
+            <div class="score-value">${t.score}</div>
+          </div>
+        `).join('');
+
+        const categoryGrid = document.getElementById('categoryGrid');
+        const db = WORD_DATABASE[this.language];
+        categoryGrid.innerHTML = Object.entries(db).map(([name, data]) => {
+          const isUsed = this.usedCategoryDifficulty.has(`${name}-all`);
+          return `
+            <div class="category-card ${isUsed ? 'disabled' : ''}" onclick="${isUsed ? '' : `game.selectCategory('${name}')`}">
+              <div class="category-icon">${data.icon}</div>
+              <div class="category-label">${name}</div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      selectCategory(category) {
+        document.getElementById('categoryIcon').textContent = WORD_DATABASE[this.language][category].icon;
+        document.getElementById('categoryName').textContent = category;
+
+        this.selectedCategory = category;
+        this.selectedDifficulty = null;
+
+        this.renderDifficultySelectorForCategory();
+        this.showScreen('screen-category');
+      },
+
+      renderDifficultySelectorForCategory() {
+        const categoryData = WORD_DATABASE[this.language][this.selectedCategory];
+        const selector = document.getElementById('difficultySelector');
+        
+        let html = '';
+        if (categoryData.special) {
+          const isUsed = this.usedCategoryDifficulty.has(`${this.selectedCategory}-special`);
+          html = `
+            <button class="difficulty-btn ${isUsed ? 'disabled' : ''}" onclick="${isUsed ? '' : `game.selectDifficulty('special')`}">
+              <div style="font-size: 12px;">${this.t('special')}</div>
+              <div style="font-size: 18px; font-weight: 900; margin-top: 4px;">30pts</div>
+            </button>
+          `;
+        } else {
+          const difficulties = ['easy', 'medium', 'hard'];
+          const points = [2, 4, 6];
+          html = difficulties.map((diff, idx) => {
+            const isUsed = this.usedCategoryDifficulty.has(`${this.selectedCategory}-${diff}`);
+            return `
+              <button class="difficulty-btn ${isUsed ? 'disabled' : ''}" onclick="${isUsed ? '' : `game.selectDifficulty('${diff}')`}">
+                <div style="font-size: 12px;">${this.t(diff)}</div>
+                <div style="font-size: 18px; font-weight: 900; margin-top: 4px;">${points[idx]}pts</div>
+              </button>
+            `;
+          }).join('');
+        }
+        selector.innerHTML = html;
+      },
+
+      selectDifficulty(difficulty) {
+        this.selectedDifficulty = difficulty;
+
+        const key = `${this.selectedCategory}-${difficulty}`;
+        if (this.usedCategoryDifficulty.has(key)) {
+          return;
+        }
+
+        this.usedCategoryDifficulty.add(key);
+
+        const categoryData = WORD_DATABASE[this.language][this.selectedCategory];
+        const wordList = categoryData[difficulty] || categoryData.special;
+        const availableWords = wordList.filter(w => !this.usedWords.has(w));
+
+        if (availableWords.length === 0) {
+          this.usedWords.clear();
+          this.currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+        } else {
+          this.currentWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+        }
+
+        this.usedWords.add(this.currentWord);
+        this.wordChanged = false;
+
+        this.showWordScreen();
+      },
+
+      showWordScreen() {
+        const team = this.teams[this.currentTeamIndex];
+        const pointsMap = { easy: 2, medium: 4, hard: 6, special: 30 };
+        const diffPoints = pointsMap[this.selectedDifficulty] || 0;
+
+        document.getElementById('wordTeamName').textContent = team.name;
+        document.getElementById('wordCategory').textContent = this.selectedCategory;
+        document.getElementById('wordDifficulty').textContent = `${this.t(this.selectedDifficulty)} • ${diffPoints} ${this.t('points')}`;
+
+        document.getElementById('wordDisplay').textContent = '?';
+        document.getElementById('showWordBtn').style.display = 'block';
+        document.getElementById('wordActions').style.display = 'none';
+        document.getElementById('changeWordBtn').disabled = this.wordChanged;
+
+        this.showScreen('screen-word');
+      },
+
+      revealWord() {
+        document.getElementById('wordDisplay').textContent = this.currentWord;
+        document.getElementById('showWordBtn').style.display = 'none';
+        document.getElementById('wordActions').style.display = 'block';
+      },
+
+      changeWord() {
+        if (this.wordChanged) return;
+
+        this.wordChanged = true;
+        this.teams[this.currentTeamIndex].score -= 1;
+        document.getElementById('changeWordBtn').disabled = true;
+
+        const categoryData = WORD_DATABASE[this.language][this.selectedCategory];
+        const wordList = categoryData[this.selectedDifficulty] || categoryData.special;
+        const availableWords = wordList.filter(w => !this.usedWords.has(w) && w !== this.currentWord);
+
+        if (availableWords.length > 0) {
+          this.currentWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+          this.usedWords.add(this.currentWord);
+        }
+
+        document.getElementById('wordDisplay').textContent = this.currentWord;
+      },
+
+      startTimer() {
+        const team = this.teams[this.currentTeamIndex];
+        document.getElementById('timerTeamName').textContent = team.name;
+        document.getElementById('timerCategory').textContent = this.selectedCategory;
+        document.getElementById('timerDisplay').textContent = this.timePerRound;
+
+        this.timerDisplay = this.timePerRound;
+        this.showScreen('screen-timer');
+
+        this.timerInterval = setInterval(() => {
+          this.timerDisplay--;
+          document.getElementById('timerDisplay').textContent = this.timerDisplay;
+
+          if (this.timerDisplay <= 0) {
+            clearInterval(this.timerInterval);
+            this.answerWrong();
+          }
+        }, 1000);
+      },
+
+      answerCorrect() {
+        clearInterval(this.timerInterval);
+
+        const pointsMap = { easy: 2, medium: 4, hard: 6, special: 30 };
+        const diffPoints = pointsMap[this.selectedDifficulty] || 0;
+        this.teams[this.currentTeamIndex].score += diffPoints;
+
+        this.showRoundEnd(true, diffPoints);
+      },
+
+      answerWrong() {
+        clearInterval(this.timerInterval);
+        this.teams[this.currentTeamIndex].score -= 1;
+        this.showRoundEnd(false, -1);
+      },
+
+      showRoundEnd(correct, points) {
+        document.getElementById('resultIcon').textContent = correct ? '🎉' : '😢';
+        document.getElementById('resultText').textContent = correct ? this.t('correct') : this.t('wrong');
+
+        const pointsHtml = `<span class="${correct ? 'positive' : 'negative'}">
+          ${correct ? '+' : ''}${points} ${this.t('points')}
+        </span>`;
+        document.getElementById('resultPoints').innerHTML = pointsHtml;
+
+        const roundEndScores = document.getElementById('roundEndScores');
+        roundEndScores.innerHTML = this.teams.map((t, i) => `
+          <div class="score-row">
+            <div class="score-name">${t.name}</div>
+            <div class="score-value">${t.score}</div>
+          </div>
+        `).join('');
+
+        this.showScreen('screen-round-end');
+      },
+
+      nextTurn() {
+        this.currentTeamIndex = (this.currentTeamIndex + 1) % this.teamCount;
+
+        if (this.currentTeamIndex === 0) {
+          this.currentRound++;
+        }
+
+        if (this.currentRound > this.numRounds) {
+          this.showResults();
+        } else {
+          this.showBoard();
+        }
+      },
+
+      showResults() {
+        const sorted = [...this.teams].sort((a, b) => b.score - a.score);
+        const medals = ['🥇', '🥈', '🥉'];
+
+        const finalResults = document.getElementById('finalResults');
+        finalResults.innerHTML = sorted.map((team, i) => `
+          <div class="score-row">
+            <div class="rank-position">
+              <span class="medal">${medals[i] || `${i + 1}.`}</span>
+              <span class="score-name">${team.name}</span>
+            </div>
+            <div class="score-value">${team.score}</div>
+          </div>
+        `).join('');
+
+        this.showScreen('screen-results');
+      },
+
+      restartGame() {
+        this.teams.forEach(t => t.score = 0);
+        this.currentRound = 1;
+        this.currentTeamIndex = 0;
+        this.usedWords.clear();
+        this.usedCategoryDifficulty.clear();
+        this.showBoard();
+      },
+
+      newGame() {
+        this.teams = [];
+        this.currentRound = 1;
+        this.currentTeamIndex = 0;
+        this.usedWords.clear();
+        this.usedCategoryDifficulty.clear();
+        this.showScreen('screen-language');
+      }
+    };
+
+    game.applyColors();
+    game.showScreen('screen-language');
+  </script>
+</body>
+</html>
